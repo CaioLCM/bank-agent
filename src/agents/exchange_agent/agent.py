@@ -17,3 +17,5 @@ def create_exchange_agent():
             - informar a cotação de forma clara ao cliente
         """
     )
+
+exchange_agent = create_exchange_agent()

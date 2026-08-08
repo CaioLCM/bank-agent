@@ -17,3 +17,5 @@ def create_credit_agent():
             - registrar a solicitação de crédito
         """
     )
+
+credit_agent = create_credit_agent()

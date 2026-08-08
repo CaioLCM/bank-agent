@@ -18,3 +18,5 @@ def create_credit_interview_agent():
             - redirecionar o cliente para o agente de crédito ao final da entrevista
         """
     )
+
+credit_interview_agent = create_credit_interview_agent()

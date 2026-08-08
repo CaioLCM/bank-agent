@@ -1,5 +1,7 @@
 from langchain.agents import create_agent
 
+from langgraph.checkpoint.memory import InMemorySaver
+
 from src.core.model import get_model
 
 from .tools import (
@@ -13,12 +15,16 @@ def create_triage_agent():
     return create_agent(
         model=get_model(),
         tools=[verify_user, transfer_to_credit_agent, transfer_to_credit_interview_agent, transfer_to_exchange_agent],
-        system_prompt="""
+        system_prompt=
+        """
             Você é um agente de triagem, atuando como porta de entrada no atendimento: 
             - recepcionando o cliente, 
             - coletando CPF e data de nascimento para autenticação contra uma
             base de dados (clientes.csv), 
             - direcionando para o agente mais apropriado, conforme a necessidade identificada, 
             somente após a autenticação bem-sucedida
-        """
+        """,
+        checkpointer=InMemorySaver()
     )
+
+triage_agent = create_triage_agent()
