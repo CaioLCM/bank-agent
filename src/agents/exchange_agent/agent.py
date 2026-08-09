@@ -8,11 +8,15 @@ from .tools import (
     get_dollar_rate
 )
 
+from ..handoff_tools import (
+    handoff_to_triage_agent
+)
+
 def create_exchange_agent():
     return create_agent(
         model=get_model(),
         state_schema=BankState,
-        tools=[get_dollar_rate],
+        tools=[get_dollar_rate, handoff_to_triage_agent],
         system_prompt="""
             Você é um agente de câmbio, responsável por:
             - atender dúvidas do cliente sobre câmbio,
