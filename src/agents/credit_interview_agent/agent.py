@@ -2,6 +2,8 @@ from langchain.agents import create_agent
 
 from src.core.model import get_model
 
+from ..state_model import BankState
+
 from .tools import (
     update_score,
     transfer_to_credit_agent
@@ -10,6 +12,7 @@ from .tools import (
 def create_credit_interview_agent():
     return create_agent(
         model=get_model(),
+        state_schema=BankState,
         tools=[update_score, transfer_to_credit_agent],
         system_prompt="""
             Você é um agente de entrevista de crédito, responsável por:
