@@ -1,7 +1,25 @@
 from langchain.tools import tool
 from langchain.messages import ToolMessage
+from langgraph.graph import END
 from langgraph.types import Command
 from langgraph.prebuilt import ToolRuntime
+
+@tool
+def end_conversation(runtime: ToolRuntime):
+    """Encerra o atendimento quando o cliente pede para finalizar a conversa."""
+    return Command(
+        graph=Command.PARENT,
+        update={
+            "messages": [
+                ToolMessage(
+                    content="Atendimento encerrado",
+                    tool_call_id=runtime.tool_call_id
+                )
+            ],
+            "conversation_ended": True
+        },
+        goto=END
+    )
 
 @tool
 def handoff_to_triage_agent(runtime: ToolRuntime):

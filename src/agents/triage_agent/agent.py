@@ -9,6 +9,7 @@ from .tools import (
 )
 
 from ..handoff_tools import (
+    end_conversation,
     handoff_to_credit_agent,
     handoff_to_credit_interview_agent,
     handoff_to_exchange_agent
@@ -18,7 +19,7 @@ def create_triage_agent():
     return create_agent(
         model=get_model(),
         state_schema=BankState,
-        tools=[verify_user, handoff_to_credit_agent, handoff_to_credit_interview_agent, handoff_to_exchange_agent],
+        tools=[verify_user, handoff_to_credit_agent, handoff_to_credit_interview_agent, handoff_to_exchange_agent, end_conversation],
         system_prompt=
         """
             Você é um agente de triagem, atuando como porta de entrada no atendimento: 

@@ -9,6 +9,7 @@ from .tools import (
 )
 
 from ..handoff_tools import (
+    end_conversation,
     handoff_to_credit_agent,
     handoff_to_triage_agent
 )
@@ -17,7 +18,7 @@ def create_credit_interview_agent():
     return create_agent(
         model=get_model(),
         state_schema=BankState,
-        tools=[update_score, handoff_to_credit_agent, handoff_to_triage_agent],
+        tools=[update_score, handoff_to_credit_agent, handoff_to_triage_agent, end_conversation],
         system_prompt="""
             Você é um agente de entrevista de crédito, responsável por:
             - conduzir a entrevista com o cliente para levantar informações financeiras,
