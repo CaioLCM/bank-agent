@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     openrouter_api_key: str
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
 
+    # Autenticação
+    jwt_secret: str = "dev-secret-apenas-para-desenvolvimento-trocar-em-producao"
+    jwt_algorithm: str = "HS256"
+    jwt_ttl_minutes: int = 30
+
 
 def get_settings() -> Settings:
     return Settings()

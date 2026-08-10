@@ -10,3 +10,5 @@ class BankState(BaseModel):
     current_agent: str = "triage_agent"
     conversation_ended: bool = False
     messages: Annotated[list[BaseMessage], add_messages] = []
+    cpf: str | None = None
+    auth: bool = False

@@ -6,7 +6,15 @@ from langgraph.prebuilt import ToolRuntime
 
 @tool
 def end_conversation(runtime: ToolRuntime):
-    """Encerra o atendimento quando o cliente pede para finalizar a conversa."""
+    """Encerra o atendimento e finaliza o loop de execução.
+
+    Use quando o cliente pedir para encerrar a conversa, se despedir, ou quando
+    o assunto tiver sido resolvido e ele não quiser mais nada. Use também quando
+    a autenticação falhar pela terceira vez consecutiva.
+
+    Depois disso nenhum agente responde: só chame quando não houver mais nada a
+    fazer. Se o cliente ainda quiser outro serviço, prefira uma tool de handoff.
+    """
     return Command(
         graph=Command.PARENT,
         update={
@@ -16,14 +24,23 @@ def end_conversation(runtime: ToolRuntime):
                     tool_call_id=runtime.tool_call_id
                 )
             ],
-            "conversation_ended": True
+            "conversation_ended": True,
+            "auth": None
         },
         goto=END
     )
 
 @tool
 def handoff_to_triage_agent(runtime: ToolRuntime):
-    """Devolve o atendimento para o agente de triagem."""
+    """Devolve o atendimento para o agente de triagem.
+
+    O agente de triagem é a porta de entrada: autentica o cliente por CPF e data
+    de nascimento e identifica qual assunto ele quer tratar.
+
+    Use quando o assunto atual estiver concluído e o cliente trouxer uma demanda
+    fora do seu escopo, ou quando não estiver claro para qual agente encaminhar.
+    O cliente continua autenticado, então ele não precisará se identificar de novo.
+    """
     return Command(
         graph=Command.PARENT,
         update={
@@ -40,7 +57,16 @@ def handoff_to_triage_agent(runtime: ToolRuntime):
 
 @tool
 def handoff_to_credit_agent(runtime: ToolRuntime):
-    """Transfere o atendimento para o agente de crédito."""
+    """Transfere o atendimento para o agente de crédito.
+
+    O agente de crédito consulta o limite de crédito disponível do cliente e
+    processa pedidos de aumento de limite, avaliando-os contra o score atual.
+
+    Use quando o cliente perguntar qual é o seu limite, pedir aumento de limite,
+    ou tratar de qualquer assunto relacionado ao crédito dele. Use também para
+    devolver o cliente ao crédito depois de a entrevista recalcular o score,
+    para que o pedido seja reavaliado. Exige cliente autenticado.
+    """
     return Command(
         graph=Command.PARENT,
         update={
@@ -57,7 +83,16 @@ def handoff_to_credit_agent(runtime: ToolRuntime):
 
 @tool
 def handoff_to_credit_interview_agent(runtime: ToolRuntime):
-    """Transfere o atendimento para o agente de entrevista de crédito."""
+    """Transfere o atendimento para o agente de entrevista de crédito.
+
+    O agente de entrevista faz perguntas sobre renda mensal, tipo de emprego,
+    despesas fixas, dependentes e dívidas ativas, recalcula o score do cliente
+    com esses dados e o devolve ao agente de crédito para nova análise.
+
+    Use quando um pedido de aumento de limite for rejeitado e o cliente aceitar
+    passar pela entrevista para tentar reajustar o score. Não transfira sem o
+    cliente concordar, e não use se ele só quiser consultar o score.
+    """
     return Command(
         graph=Command.PARENT,
         update={
@@ -74,7 +109,14 @@ def handoff_to_credit_interview_agent(runtime: ToolRuntime):
 
 @tool
 def handoff_to_exchange_agent(runtime: ToolRuntime):
-    """Transfere o atendimento para o agente de câmbio."""
+    """Transfere o atendimento para o agente de câmbio.
+
+    O agente de câmbio consulta a cotação atual do dólar em
+    uma fonte externa e informa o valor ao cliente.
+
+    Use quando o cliente perguntar sobre cotação, câmbio, ou o valor do dólar. 
+    Não use para assuntos de crédito ou limite.
+    """
     return Command(
         graph=Command.PARENT,
         update={
