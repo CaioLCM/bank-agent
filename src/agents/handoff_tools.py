@@ -4,15 +4,15 @@ from langgraph.graph import END
 from langgraph.types import Command
 from langgraph.prebuilt import ToolRuntime
 
+from .state_model import state_as_dict
+
 # O Command com graph=PARENT aborta o subgrafo antes de as escritas dele
 # propagarem, então o que uma tool gravou no mesmo turno se perderia. Estes
 # campos são relidos do estado do subgrafo e repassados junto do handoff.
-CAMPOS_PROPAGADOS = ("auth", "cpf", "auth_attempts")
+CAMPOS_PROPAGADOS = ("auth_token", "auth_attempts")
 
 def _estado_propagado(runtime: ToolRuntime) -> dict:
-    state = runtime.state
-    if not isinstance(state, dict):
-        state = state.model_dump()
+    state = state_as_dict(runtime)
     return {campo: state[campo] for campo in CAMPOS_PROPAGADOS if campo in state}
 
 @tool
@@ -34,7 +34,7 @@ def end_conversation(runtime: ToolRuntime):
                 AIMessage(content="Atendimento encerrado")
             ],
             "conversation_ended": True,
-            "auth": False
+            "auth_token": None
         },
         goto=END
     )

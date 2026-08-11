@@ -10,6 +10,8 @@ from src.storage.csv_handlers import get_user
 
 from src.core.auth import create_token
 
+from ..state_model import state_as_dict
+
 MAX_AUTH_ATTEMPTS = 3
 
 @tool
@@ -19,18 +21,12 @@ def verify_user(CPF: str, birth: str, runtime: ToolRuntime):
         return Command(
             update={
                 "messages": [ToolMessage("Cliente autenticado", tool_call_id=runtime.tool_call_id)],
-                "cpf": CPF,
-                "auth": True,
+                "auth_token": create_token(CPF),
                 "auth_attempts": 0
             }
         )
 
-    # runtime.state chega como dict dentro do create_agent e como BankState em
-    # grafos montados à mão, então aceitamos as duas formas.
-    state = runtime.state
-    anteriores = state.get("auth_attempts", 0) if isinstance(state, dict) else state.auth_attempts
-
-    attempts = anteriores + 1
+    attempts = state_as_dict(runtime).get("auth_attempts", 0) + 1
     restantes = MAX_AUTH_ATTEMPTS - attempts
 
     if restantes > 0:
@@ -49,7 +45,7 @@ def verify_user(CPF: str, birth: str, runtime: ToolRuntime):
     return Command(
         update={
             "messages": [ToolMessage(conteudo, tool_call_id=runtime.tool_call_id)],
-            "auth": False,
+            "auth_token": None,
             "auth_attempts": attempts
         }
     )
