@@ -7,6 +7,7 @@ from ..state_model import BankState
 from .prompts import SYSTEM_PROMPT
 
 from .tools import (
+    consult_credit_limit,
     request_credit
 )
 
@@ -20,7 +21,7 @@ def create_credit_agent():
     return create_agent(
         model=get_model(),
         state_schema=BankState,
-        tools=[request_credit, handoff_to_credit_interview_agent, handoff_to_triage_agent, end_conversation],
+        tools=[consult_credit_limit, request_credit, handoff_to_credit_interview_agent, handoff_to_triage_agent, end_conversation],
         system_prompt=SYSTEM_PROMPT
     )
 
