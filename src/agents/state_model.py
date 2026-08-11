@@ -12,3 +12,4 @@ class BankState(BaseModel):
     messages: Annotated[list[BaseMessage], add_messages] = []
     cpf: str | None = None
     auth: bool = False
+    auth_attempts: int = 0

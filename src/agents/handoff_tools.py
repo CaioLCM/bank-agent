@@ -1,8 +1,19 @@
 from langchain.tools import tool
-from langchain.messages import ToolMessage
+from langchain.messages import AIMessage
 from langgraph.graph import END
 from langgraph.types import Command
 from langgraph.prebuilt import ToolRuntime
+
+# O Command com graph=PARENT aborta o subgrafo antes de as escritas dele
+# propagarem, então o que uma tool gravou no mesmo turno se perderia. Estes
+# campos são relidos do estado do subgrafo e repassados junto do handoff.
+CAMPOS_PROPAGADOS = ("auth", "cpf", "auth_attempts")
+
+def _estado_propagado(runtime: ToolRuntime) -> dict:
+    state = runtime.state
+    if not isinstance(state, dict):
+        state = state.model_dump()
+    return {campo: state[campo] for campo in CAMPOS_PROPAGADOS if campo in state}
 
 @tool
 def end_conversation(runtime: ToolRuntime):
@@ -18,14 +29,12 @@ def end_conversation(runtime: ToolRuntime):
     return Command(
         graph=Command.PARENT,
         update={
+            **_estado_propagado(runtime),
             "messages": [
-                ToolMessage(
-                    content="Atendimento encerrado",
-                    tool_call_id=runtime.tool_call_id
-                )
+                AIMessage(content="Atendimento encerrado")
             ],
             "conversation_ended": True,
-            "auth": None
+            "auth": False
         },
         goto=END
     )
@@ -44,12 +53,7 @@ def handoff_to_triage_agent(runtime: ToolRuntime):
     return Command(
         graph=Command.PARENT,
         update={
-            "messages": [
-                ToolMessage(
-                    content="Transferido para agente de triagem",
-                    tool_call_id=runtime.tool_call_id
-                )
-            ],
+            **_estado_propagado(runtime),
             "current_agent": "triage_agent"
         },
         goto="triage_agent"
@@ -70,12 +74,7 @@ def handoff_to_credit_agent(runtime: ToolRuntime):
     return Command(
         graph=Command.PARENT,
         update={
-            "messages": [
-                ToolMessage(
-                    content="Transferido para agente de crédito",
-                    tool_call_id=runtime.tool_call_id
-                )
-            ],
+            **_estado_propagado(runtime),
             "current_agent": "credit_agent"
         },
         goto="credit_agent"
@@ -96,12 +95,7 @@ def handoff_to_credit_interview_agent(runtime: ToolRuntime):
     return Command(
         graph=Command.PARENT,
         update={
-            "messages": [
-                ToolMessage(
-                    content="Transferido para agente de entrevista de crédito",
-                    tool_call_id=runtime.tool_call_id
-                )
-            ],
+            **_estado_propagado(runtime),
             "current_agent": "credit_interview_agent"
         },
         goto="credit_interview_agent"
@@ -120,12 +114,7 @@ def handoff_to_exchange_agent(runtime: ToolRuntime):
     return Command(
         graph=Command.PARENT,
         update={
-            "messages": [
-                ToolMessage(
-                    content="Transferido para agente de câmbio",
-                    tool_call_id=runtime.tool_call_id
-                )
-            ],
+            **_estado_propagado(runtime),
             "current_agent": "exchange_agent"
         },
         goto="exchange_agent"
