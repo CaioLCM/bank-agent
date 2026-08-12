@@ -18,6 +18,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     message: str
     thread_id: str
+    conversation_ended: bool = False
 
 
 @router.post("/invoke", response_model=ChatResponse)
@@ -28,4 +29,8 @@ async def invoke(request: ChatRequest):
         {"messages": [HumanMessage(content=request.message)]},
         {"configurable": {"thread_id": thread_id}},
     )
-    return ChatResponse(message=resp["messages"][-1].content, thread_id=thread_id)
+    return ChatResponse(
+        message=resp["messages"][-1].content,
+        thread_id=thread_id,
+        conversation_ended=bool(resp.get("conversation_ended")),
+    )
