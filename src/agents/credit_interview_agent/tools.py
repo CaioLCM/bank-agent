@@ -28,6 +28,14 @@ def update_score(
     if cpf is None:
         return INVALID_SESSION
 
+    if monthly_income <= 0 and employment_type != "desempregado":
+        return (
+            "Renda mensal ausente ou zerada para quem não está desempregado. "
+            "Não invente valores: pergunte ao cliente a renda mensal, as despesas "
+            "fixas, o número de dependentes e se há dívidas ativas antes de chamar "
+            "esta ferramenta novamente."
+        )
+
     try:
         new_score = calculate_score(
             monthly_income=monthly_income,
