@@ -12,11 +12,11 @@ from src.core.auth import create_token
 
 from src.core.logger import get_logger, mask_cpf
 
+from ..handoff_tools import MAX_AUTH_ATTEMPTS
+
 from ..state_model import state_as_dict
 
 logger = get_logger(__name__)
-
-MAX_AUTH_ATTEMPTS = 3
 
 @tool
 def verify_user(CPF: str, birth: str, runtime: ToolRuntime):

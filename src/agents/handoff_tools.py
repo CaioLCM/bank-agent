@@ -15,6 +15,12 @@ logger = get_logger(__name__)
 # campos são relidos do estado do subgrafo e repassados junto do handoff.
 PROPAGATED_FIELDS = ("auth_token", "auth_attempts")
 
+MAX_AUTH_ATTEMPTS = 3
+
+FAREWELL = "Obrigado por falar com o Banco Ágil. Até logo!"
+
+FAILED_AUTH_FAREWELL = "Não consegui confirmar seus dados. Por segurança, vou encerrar por aqui. "
+
 def _propagated_state(runtime: ToolRuntime) -> dict:
     state = state_as_dict(runtime)
     return {field: state[field] for field in PROPAGATED_FIELDS if field in state}
@@ -30,13 +36,16 @@ def end_conversation(runtime: ToolRuntime):
     Depois disso nenhum agente responde: só chame quando não houver mais nada a
     fazer. Se o cliente ainda quiser outro serviço, prefira uma tool de handoff.
     """
+    attempts = state_as_dict(runtime).get("auth_attempts", 0)
+    failed_auth = attempts >= MAX_AUTH_ATTEMPTS
+
     logger.info("atendimento encerrado")
     return Command(
         graph=Command.PARENT,
         update={
             **_propagated_state(runtime),
             "messages": [
-                AIMessage(content="Atendimento encerrado")
+                AIMessage(content=FAILED_AUTH_FAREWELL if failed_auth else FAREWELL)
             ],
             "conversation_ended": True,
             "auth_token": None
