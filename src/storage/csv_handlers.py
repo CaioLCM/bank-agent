@@ -1,6 +1,6 @@
 import pandas as pd
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from src.core.logger import get_logger, mask_cpf
@@ -87,7 +87,7 @@ def request_limit_increase(CPF: str, new_limit: float) -> dict:
 
     credit_request = {
         "cpf_cliente": CPF,
-        "data_hora_solicitacao": datetime.now().isoformat(),
+        "data_hora_solicitacao": datetime.now(timezone.utc).isoformat(),
         "limite_atual": current_limit,
         "novo_limite_solicitado": float(new_limit),
         "status_pedido": "aprovado" if float(new_limit) <= allowed_limit else "rejeitado",
