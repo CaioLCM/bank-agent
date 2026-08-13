@@ -7,7 +7,7 @@ from ..state_model import BankState
 from .prompts import SYSTEM_PROMPT
 
 from .tools import (
-    get_dollar_rate
+    get_exchange_rate
 )
 
 from ..handoff_tools import (
@@ -19,7 +19,7 @@ def create_exchange_agent():
     return create_agent(
         model=get_model(),
         state_schema=BankState,
-        tools=[get_dollar_rate, handoff_to_triage_agent, end_conversation],
+        tools=[get_exchange_rate, handoff_to_triage_agent, end_conversation],
         system_prompt=SYSTEM_PROMPT
     )
 

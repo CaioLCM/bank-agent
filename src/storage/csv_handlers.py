@@ -7,6 +7,7 @@ from src.core.logger import get_logger, mask_cpf
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 CLIENTS_PATH = DATA_DIR / "clientes.csv"
+SCORE_LIMIT_PATH = DATA_DIR / "score_limite.csv"
 REQUESTS_PATH = DATA_DIR / "solicitacoes_aumento_limite.csv"
 
 logger = get_logger(__name__)
@@ -19,7 +20,7 @@ REQUEST_COLUMNS = [
     "status_pedido",
 ]
 
-score_limit_df = pd.read_csv(DATA_DIR / "score_limite.csv")
+score_limit_df = pd.read_csv(SCORE_LIMIT_PATH)
 
 def get_clients():
     """Base de clientes lida do disco a cada chamada, já que limite e score mudam."""
