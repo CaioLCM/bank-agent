@@ -4,16 +4,20 @@ from langgraph.graph import END
 from langgraph.types import Command
 from langgraph.prebuilt import ToolRuntime
 
+from src.core.logger import get_logger
+
 from .state_model import state_as_dict
+
+logger = get_logger(__name__)
 
 # O Command com graph=PARENT aborta o subgrafo antes de as escritas dele
 # propagarem, então o que uma tool gravou no mesmo turno se perderia. Estes
 # campos são relidos do estado do subgrafo e repassados junto do handoff.
-CAMPOS_PROPAGADOS = ("auth_token", "auth_attempts")
+PROPAGATED_FIELDS = ("auth_token", "auth_attempts")
 
-def _estado_propagado(runtime: ToolRuntime) -> dict:
+def _propagated_state(runtime: ToolRuntime) -> dict:
     state = state_as_dict(runtime)
-    return {campo: state[campo] for campo in CAMPOS_PROPAGADOS if campo in state}
+    return {field: state[field] for field in PROPAGATED_FIELDS if field in state}
 
 @tool
 def end_conversation(runtime: ToolRuntime):
@@ -26,10 +30,11 @@ def end_conversation(runtime: ToolRuntime):
     Depois disso nenhum agente responde: só chame quando não houver mais nada a
     fazer. Se o cliente ainda quiser outro serviço, prefira uma tool de handoff.
     """
+    logger.info("atendimento encerrado")
     return Command(
         graph=Command.PARENT,
         update={
-            **_estado_propagado(runtime),
+            **_propagated_state(runtime),
             "messages": [
                 AIMessage(content="Atendimento encerrado")
             ],
@@ -50,10 +55,11 @@ def handoff_to_triage_agent(runtime: ToolRuntime):
     fora do seu escopo, ou quando não estiver claro para qual agente encaminhar.
     O cliente continua autenticado, então ele não precisará se identificar de novo.
     """
+    logger.info("handoff -> %s", "triage_agent")
     return Command(
         graph=Command.PARENT,
         update={
-            **_estado_propagado(runtime),
+            **_propagated_state(runtime),
             "current_agent": "triage_agent"
         },
         goto="triage_agent"
@@ -71,10 +77,11 @@ def handoff_to_credit_agent(runtime: ToolRuntime):
     devolver o cliente ao crédito depois de a entrevista recalcular o score,
     para que o pedido seja reavaliado. Exige cliente autenticado.
     """
+    logger.info("handoff -> %s", "credit_agent")
     return Command(
         graph=Command.PARENT,
         update={
-            **_estado_propagado(runtime),
+            **_propagated_state(runtime),
             "current_agent": "credit_agent"
         },
         goto="credit_agent"
@@ -92,10 +99,11 @@ def handoff_to_credit_interview_agent(runtime: ToolRuntime):
     passar pela entrevista para tentar reajustar o score. Não transfira sem o
     cliente concordar, e não use se ele só quiser consultar o score.
     """
+    logger.info("handoff -> %s", "credit_interview_agent")
     return Command(
         graph=Command.PARENT,
         update={
-            **_estado_propagado(runtime),
+            **_propagated_state(runtime),
             "current_agent": "credit_interview_agent"
         },
         goto="credit_interview_agent"
@@ -111,10 +119,11 @@ def handoff_to_exchange_agent(runtime: ToolRuntime):
     Use quando o cliente perguntar sobre cotação, câmbio, ou o valor do dólar. 
     Não use para assuntos de crédito ou limite.
     """
+    logger.info("handoff -> %s", "exchange_agent")
     return Command(
         graph=Command.PARENT,
         update={
-            **_estado_propagado(runtime),
+            **_propagated_state(runtime),
             "current_agent": "exchange_agent"
         },
         goto="exchange_agent"

@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     # API
     api_url: str = "http://127.0.0.1:8000"
 
+    # Ambiente
+    is_dev: bool = True
+
     # Autenticação
     jwt_secret: str = "dev-secret-apenas-para-desenvolvimento-trocar-em-producao"
     jwt_algorithm: str = "HS256"

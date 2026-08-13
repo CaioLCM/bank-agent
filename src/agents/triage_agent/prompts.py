@@ -1,6 +1,6 @@
 from ..prompt_rules import GENERAL_RULES, HANDOFF_RULES
 
-PROMPT_NAO_AUTENTICADO = """
+UNAUTHENTICATED_PROMPT = """
     Você é o agente de triagem do Banco Ágil, a porta de entrada do atendimento.
     O cliente AINDA NÃO está autenticado.
 
@@ -27,7 +27,7 @@ PROMPT_NAO_AUTENTICADO = """
        agradável que não foi possível autenticar e chame end_conversation.
 """ + GENERAL_RULES
 
-PROMPT_AUTENTICADO = """
+AUTHENTICATED_PROMPT = """
     Você é o agente de triagem do Banco Ágil, a porta de entrada do atendimento.
     O cliente JÁ está autenticado.
 

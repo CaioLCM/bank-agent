@@ -10,7 +10,7 @@ from src.core.model import get_model
 
 from ..state_model import BankState
 
-from .prompts import PROMPT_AUTENTICADO, PROMPT_NAO_AUTENTICADO
+from .prompts import AUTHENTICATED_PROMPT, UNAUTHENTICATED_PROMPT
 
 from .tools import (
     verify_user,
@@ -37,7 +37,7 @@ async def gate(request, handler):
             handoff_to_exchange_agent,
             end_conversation,
         ] if auth else [verify_user, end_conversation],
-        system_message=SystemMessage(PROMPT_AUTENTICADO if auth else PROMPT_NAO_AUTENTICADO)
+        system_message=SystemMessage(AUTHENTICATED_PROMPT if auth else UNAUTHENTICATED_PROMPT)
     )
     return await handler(new)
 

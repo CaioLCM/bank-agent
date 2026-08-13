@@ -8,6 +8,10 @@ import uuid
 
 from src.agents.orchestrator import orchestrator
 
+from src.core.logger import get_logger
+
+logger = get_logger(__name__)
+
 router = APIRouter(tags=["chat"])
 
 class ChatRequest(BaseModel):
@@ -25,10 +29,23 @@ class ChatResponse(BaseModel):
 async def invoke(request: ChatRequest):
     """Execução síncrona: recebe a mensagem e devolve a resposta completa."""
     thread_id = request.thread_id or uuid.uuid4().hex
-    resp = await orchestrator.ainvoke(
-        {"messages": [HumanMessage(content=request.message)]},
-        {"configurable": {"thread_id": thread_id}},
+    is_new = request.thread_id is None
+    logger.info("turno recebido | thread=%s nova_conversa=%s", thread_id, is_new)
+
+    try:
+        resp = await orchestrator.ainvoke(
+            {"messages": [HumanMessage(content=request.message)]},
+            {"configurable": {"thread_id": thread_id}},
+        )
+    except Exception:
+        logger.exception("falha ao processar o turno | thread=%s", thread_id)
+        raise
+
+    logger.info(
+        "turno concluido | thread=%s agente=%s encerrada=%s",
+        thread_id, resp.get("current_agent"), bool(resp.get("conversation_ended")),
     )
+
     return ChatResponse(
         message=resp["messages"][-1].content,
         thread_id=thread_id,
