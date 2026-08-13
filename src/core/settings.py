@@ -13,8 +13,7 @@ class Settings(BaseSettings):
 
     # LLM
     model: str
-    openrouter_api_key: str
-    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    openai_api_key: str
 
     # API
     api_url: str = "http://127.0.0.1:8000"
